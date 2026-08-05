@@ -1,37 +1,24 @@
 {
-  "name": "DataBase Studio",
-  "short_name": "DB Studio",
-  "description": "Inspección, manipulación, respaldo y auditoría de bases de datos locales IndexedDB.",
+  "name": "PWA Básica Bootstrap 5",
+  "short_name": "PWABootstrap",
+  "description": "Plantilla PWA modular con interfaz estilizada mediante Bootstrap 5 y estructura de carpetas.",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
-  "background_color": "#4f46e5",
-  "theme_color": "#4f46e5",
+  "background_color": "#212529",
+  "theme_color": "#7952b3",
   "orientation": "any",
   "icons": [
     {
-      "src": "./icon-512.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-512.jpg",
+      "src": "images/icon192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "./icon-512.jpg",
-      "sizes": "144x144",
-      "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-512.jpg",
+      "src": "images/icon512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "maskable"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

@@ -1,40 +1,37 @@
-const CACHE_NAME = 'db-studio-v1';
+const CACHE_NAME = 'pwa-bootstrap-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './index.css',
   './manifest.json',
-  './icon-512.jpg',
-  './database-master-single.html'
-];
-
-// External assets that can be cached dynamically on load
-const DYNAMIC_CACHE_DOMAINS = [
-  'esm.sh',
-  'cdnjs.cloudflare.com',
-  'code.jquery.com',
-  'cdn.tailwindcss.com'
+  './app.js',
+  './sw.js',
+  './scripts/index.js',
+  './styles/index.css',
+  './images/favicon.ico',
+  './images/icon192.png',
+  './images/icon512.png',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js',
+  'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching offline assets');
-      return cache.addAll(ASSETS_TO_CACHE).catch(err => {
-        console.warn('[Service Worker] Pre-cache warning (some assets might not be available yet):', err);
-      });
+      console.log('[SW Bootstrap] Guardando archivos estáticos en caché');
+      return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW Bootstrap] Borrando caché anterior:', key);
+            return caches.delete(key);
           }
         })
       );
@@ -43,42 +40,25 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Bypass for non-GET requests or dev server HMR/socket connections
-  if (event.request.method !== 'GET' || url.protocol === 'ws:' || url.protocol === 'wss:') {
-    return;
-  }
-
-  // Network First with Cache Fallback strategy
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache valid HTTP status 200 responses
-        if (response && response.status === 200) {
-          const isDomainToCache = DYNAMIC_CACHE_DOMAINS.some(domain => url.hostname.includes(domain)) ||
-                                  url.origin === self.location.origin;
-          
-          if (isDomainToCache) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
         }
-        return response;
-      })
-      .catch(() => {
-        // Serve from cache if offline
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Dynamic fallback for navigation mode if offline
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
         });
-      })
+        return networkResponse;
+      }).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
   );
 });
