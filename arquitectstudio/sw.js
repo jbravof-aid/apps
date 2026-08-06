@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pwa-base-v1';
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
+const CACHE_NAME = 'pwa-arquitectstudio-v1';
+const ASSETS = ['./','./assets',  './index.html', './styles.css', './app.js', './sw.js', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
