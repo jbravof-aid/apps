@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Tarjetas de Enlaces</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Barra de desplazamiento sutil y semi-transparente para MAIN */
+        main::-webkit-scrollbar {
+            width: 6px;
+        }
+        main::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        main::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 9999px;
+        }
+        main::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+        /* Compatibilidad con Firefox */
+        main {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen overflow-hidden flex flex-col transition-colors duration-300">
+
+    <!-- Header / Navbar -->
+    <header class="flex-shrink-0 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md">
+                        <i class="fa-solid fa-compass text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">
+                            LinkHub Directory
+                        </h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Tarjetas generadas dinámicamente desde Javascript</p>
+                    </div>
+                </div>
+
+                <!-- Acciones rápidas -->
+                <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <!-- Botón Importar JSON -->
+                    <button onclick="triggerImport()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium px-3 py-2 rounded-xl transition" title="Importar JSON">
+                        <i class="fa-solid fa-file-import text-brand-600 dark:text-brand-400"></i>
+                        <span class="hidden md:inline">Importar</span>
+                    </button>
+                    <input type="file" id="jsonFileInput" accept=".json" onchange="handleImportJSON(event)" class="hidden">
+
+                    <!-- Botón Exportar JSON -->
+                    <button onclick="exportJSON()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium px-3 py-2 rounded-xl shadow-md transition" title="Exportar array a un archivo JSON">
+                        <i class="fa-solid fa-file-export"></i>
+                        <span class="hidden md:inline">Exportar JSON</span>
+                    </button>
+
+                    <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Cambiar Tema">
+                        <i class="fa-solid fa-moon text-slate-600 dark:text-amber-400 dark:hidden"></i>
+                        <i class="fa-solid fa-sun text-amber-400 hidden dark:inline"></i>
+                    </button>
+
+                    <button onclick="openModal()" class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-3 sm:px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span class="hidden sm:inline">Nueva Tarjeta</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notificación Toast -->
+    <div id="toast" class="fixed bottom-24 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 dark:border-slate-300 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toastMessage" class="text-xs sm:text-sm font-medium">Notificación</span>
+    </div>
+
+    <!-- Main Content (Único contenedor con scroll) -->
+    <main class="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Counter info -->
+        <div class="flex items-center justify-between mb-4">
+            <p id="counterInfo" class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                Mostrando tarjetas...
+            </p>
+            <div class="text-xs text-slate-400 flex items-center gap-1">
+                <i class="fa-solid fa-info-circle"></i>
+                <span>Haz clic en cualquier tarjeta para navegar</span>
+            </div>
+        </div>
+
+        <!-- Card Grid Container -->
+        <div id="cardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
+            <!-- Las tarjetas se inyectarán aquí dinámicamente -->
+        </div>
+
+        <!-- State si no se encuentra nada -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mb-4 text-2xl">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-1">No se encontraron enlaces</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm">Intenta ajustar tu búsqueda o selecciona otra categoría.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer con Controles de Búsqueda y Filtros -->
+    <footer class="flex-shrink-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-lg z-30 py-3 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-3">
+            <!-- Controles de Busqueda y Filtros -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <!-- Buscador -->
+                <div class="relative flex-1 max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        oninput="filterCards()"
+                        placeholder="Buscar enlaces por título, descripción o etiqueta..." 
+                        class="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none transition shadow-inner text-xs sm:text-sm"
+                    >
+                </div>
+
+                <!-- Filtros de categoría -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none" id="categoryFilters">
+                    <!-- Se llena dinámicamente por JS -->
+                </div>
+            </div>
+
+            <!-- Credits / Legal -->
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+                <span>LinkHub Directory</span>
+                <span>Controles de filtrado e interactividad integrados en el Footer</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal para añadir nueva tarjeta -->
+    <div id="addCardModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 transform transition-all">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-link text-brand-500"></i> Añadir Nuevo Enlace
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="cardForm" onsubmit="handleFormSubmit(event)" class="mt-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Título</label>
+                    <input type="text" id="modalTitle" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Categoría</label>
+                        <input type="text" id="modalCategory" required placeholder="Ej: Desarrollo" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Insignia / Badge</label>
+                        <input type="text" id="modalBadge" placeholder="Ej: Nuevo" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">URL (href)</label>
+                    <input type="url" id="modalHref" required placeholder="https://ejemplo.com" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">URL de la Imagen</label>
+                    <input type="url" id="modalImagen" required placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Descripción / Texto</label>
+                    <textarea id="modalTexto" rows="3" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Etiquetas (separadas por comas)</label>
+                    <input type="text" id="modalTags" placeholder="HTML, Frontend, Web" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow transition">Guardar Tarjeta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+            Generador de Tarjetas Dinámico con JavaScript | Actualiza <code class="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-brand-600 dark:text-brand-400">window.location.href</code> al interactuar
+        </div>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = 'linkhub_cards_data';
+
+        const defaultLinksData = [
+            {
+                id: 1,
+                title: "MDN Web Docs",
+                category: "Desarrollo",
+                badge: "Oficial",
+                imagen: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+                texto: "Recursos completos y documentación oficial para desarrolladores web sobre HTML, CSS, JavaScript y APIs web.",
+                href: "https://developer.mozilla.org/",
+                autor: "Mozilla",
+                fecha: "2026",
+                tags: ["HTML", "CSS", "JS", "Documentación"]
+            },
+            {
+                id: 2,
+                title: "Tailwind CSS Framework",
+                category: "Diseño UI",
+                badge: "Popular",
+                imagen: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
+                texto: "Un framework CSS utility-first cargado de clases listas para construir cualquier diseño directamente en tu HTML.",
+                href: "https://tailwindcss.com/",
+                autor: "Tailwind Labs",
+                fecha: "2026",
+                tags: ["CSS", "Frontend", "UI"]
+            },
+            {
+                id: 3,
+                title: "GitHub Platform",
+                category: "Herramientas",
+                badge: "Esencial",
+                imagen: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?auto=format&fit=crop&w=600&q=80",
+                texto: "Plataforma de desarrollo colaborativo para alojar y revisar código, gestionar proyectos y construir software.",
+                href: "https://github.com/",
+                autor: "Microsoft",
+                fecha: "2026",
+                tags: ["Git", "Código", "OpenSource"]
+            },
+            {
+                id: 4,
+                title: "Unsplash Photos",
+                category: "Recursos",
+                badge: "Gratis",
+                imagen: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80",
+                texto: "Hermosas fotos de alta resolución e imágenes gratuitas regaladas por la comunidad de fotógrafos más generosa del mundo.",
+                href: "https://unsplash.com/",
+                autor: "Comunidad",
+                fecha: "2026",
+                tags: ["Fotografía", "Recursos", "Imágenes"]
+            },
+            {
+                id: 5,
+                title: "JavaScript.info",
+                category: "Desarrollo",
+                badge: "Tutorial",
+                imagen: "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?auto=format&fit=crop&w=600&q=80",
+                texto: "Desde lo básico hasta temas avanzados de JavaScript con explicaciones sencillas y detalladas.",
+                href: "https://javascript.info/",
+                autor: "Ilya Kantor",
+                fecha: "2026",
+                tags: ["JavaScript", "ES6", "Avanzado"]
+            },
+            {
+                id: 6,
+                title: "Dribbble Design",
+                category: "Diseño UI",
+                badge: "Inspiración",
+                imagen: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80",
+                texto: "Encuentra y conecta con los mejores diseñadores y talentos creativos de todo el mundo.",
+                href: "https://dribbble.com/",
+                autor: "Dribbble",
+                fecha: "2026",
+                tags: ["UI/UX", "Diseño", "Arte"]
+            },
+            {
+                id: 7,
+                title: "Data Studio",
+                category: "Data Base",
+                badge: "Inspiración",
+                imagen: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80",
+                texto: "Encuentra y conecta con los mejores diseñadores y talentos creativos de todo el mundo.",
+                href: "https://jbravof-aid.github.io/apps/datastudio/",
+                autor: "Dribbble",
+                fecha: "2026",
+                tags: ["UI/UX", "Diseño", "Arte"]
+            },
+            {
+                id: 8,
+                title: "PWA Studio",
+                category: "PWA Design",
+                badge: "Inspiración",
+                imagen: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80",
+                texto: "Encuentra y conecta con los mejores diseñadores y talentos creativos de todo el mundo.",
+                href: "https://jbravof-aid.github.io/apps/pwastudio/",
+                autor: "Dribbble",
+                fecha: "2026",
+                tags: ["UI/UX", "Diseño", "Arte"]
+            },
+            {
+                id: 9,
+                title: "Landing",
+                category: "PWA Design",
+                badge: "Inspiración",
+                imagen: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80",
+                texto: "Encuentra y conecta con los mejores diseñadores y talentos creativos de todo el mundo.",
+                href: "https://jbravof-aid.github.io/landing/",
+                autor: "Dribbble",
+                fecha: "2026",
+                tags: ["UI/UX", "Diseño", "Arte"]
+            }
+        ];
+
+        // Se inicializa desde localStorage si existe, de lo contrario con defaultLinksData
+        let linksData = loadLinksData();
+        let selectedCategory = "Todas";
+
+        /**
+         * Carga los datos almacenados en localStorage o asigna el arreglo por defecto.
+         */
+        function loadLinksData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch (err) {
+                console.error("Error al recuperar localStorage:", err);
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultLinksData));
+            return defaultLinksData;
+        }
+
+        /**
+         * Sincroniza el array actual 'linksData' con localStorage.
+         */
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(linksData));
+            } catch (err) {
+                console.error("Error al guardar en localStorage:", err);
+            }
+        }
+
+        /**
+         * Genera y descarga un archivo .json con el contenido actual de 'linksData'.
+         */
+        function exportJSON() {
+            try {
+                const jsonStr = JSON.stringify(linksData, null, 2);
+                const blob = new Blob([jsonStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `tarjetas_enlaces_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showToast("Archivo JSON descargado con éxito");
+            } catch (err) {
+                console.error("Error al exportar:", err);
+                showToast("Error al exportar el archivo", "fa-circle-exclamation");
+            }
+        }
+
+        /**
+         * Abre el selector de archivos para cargar un archivo JSON.
+         */
+        function triggerImport() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        /**
+         * Lee el archivo JSON importado por el usuario y actualiza los datos.
+         */
+        function handleImportJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData) && importedData.length > 0) {
+                        linksData = importedData;
+                        saveToLocalStorage();
+                        setupCategories();
+                        filterCards();
+                        showToast("Tarjetas actualizadas desde JSON", "fa-file-circle-check");
+                    } else {
+                        showToast("El JSON debe contener un array válido de tarjetas", "fa-triangle-exclamation");
+                    }
+                } catch (err) {
+                    console.error("Error al importar JSON:", err);
+                    showToast("Error al procesar el archivo JSON", "fa-circle-exclamation");
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * Muestra una notificación temporal en pantalla.
+         */
+        function showToast(message, iconClass = "fa-circle-check") {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = message;
+            toastIcon.className = `fa-solid ${iconClass} text-emerald-400 dark:text-emerald-500`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        /**
+         * Redirecciona la ubicación HTML del navegador actual al href seleccionado.
+         * @param {string} url - Dirección URL de destino
+         */
+        function navigateTo(url) {
+            // Actualiza la ubicación HTML actual
+            window.location.href = url;
+        }
+
+        /**
+         * Abre la URL especificada en una nueva ventana o pestaña.
+         * @param {string} url - Dirección URL de destino
+         */
+        function openInNewTab(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        /**
+         * Renderiza la lista de tarjetas basándose en el array recibido y los filtros aplicados.
+         * Cada tarjeta cuenta con Header, Body y Footer explicito.
+         */
+        function renderCards(data) {
+            const container = document.getElementById('cardsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const counterInfo = document.getElementById('counterInfo');
+
+            // Limpiar contenedor
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                counterInfo.textContent = '0 enlaces encontrados';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            counterInfo.textContent = `Mostrando ${data.length} de ${linksData.length} enlaces`;
+
+            data.forEach(item => {
+                // Crear estructura de tarjeta con Header, Body y Footer
+                const card = document.createElement('article');
+                card.className = "card-hover bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between cursor-pointer group shadow-sm hover:border-brand-500/50 dark:hover:border-brand-500/50 transition-all";
+                
+                // Acción al hacer click en cualquier parte de la tarjeta
+                card.onclick = (e) => {
+                    // Evitar duplicar redirección si hace clic directo en el botón con su propio listener
+                    if (!e.target.closest('button') && !e.target.closest('a')) {
+                        navigateTo(item.href);
+                    }
+                };
+
+                // Formatear etiquetas/tags HTML
+                const tagsHTML = item.tags ? item.tags.map(tag => 
+                    `<span class="text-[10px] font-medium bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md">#${tag}</span>`
+                ).join(' ') : '';
+
+                card.innerHTML = `
+                    <!-- HEADER DE LA TARJETA -->
+                    <header class="relative overflow-hidden aspect-video bg-slate-100 dark:bg-slate-900">
+                        <img 
+                            src="${item.imagen}" 
+                            alt="${item.title}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onerror="this.onerror=null; this.src='https://placehold.co/600x400/1e293b/ffffff?text=Imagen+no+disponible';"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+                        
+                        <!-- Badges en el Header -->
+                        <div class="absolute top-3 left-3 flex gap-2 flex-wrap">
+                            <span class="bg-brand-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-lg backdrop-blur-md shadow-sm">
+                                ${item.category}
+                            </span>
+                            ${item.badge ? `
+                                <span class="bg-amber-500/90 text-white text-xs font-semibold px-2 py-1 rounded-lg backdrop-blur-md shadow-sm">
+                                    ${item.badge}
+                                </span>
+                            ` : ''}
+                        </div>
+
+                        <!-- Botón flotante externo en el Header (Abre en nueva pestaña) -->
+                        <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button 
+                                type="button"
+                                onclick="event.stopPropagation(); openInNewTab('${item.href}')" 
+                                title="Abrir en nueva ventana"
+                                class="w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-md hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:text-white transition-colors"
+                            >
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- BODY DE LA TARJETA -->
+                    <section class="p-5 flex-grow flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-1 mb-2">
+                                ${item.title}
+                            </h2>
+                            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed mb-4">
+                                ${item.texto}
+                            </p>
+                        </div>
+
+                        <!-- Lista de Tags -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            ${tagsHTML}
+                        </div>
+                    </section>
+
+                    <!-- FOOTER DE LA TARJETA -->
+                    <footer class="px-5 py-3.5 bg-slate-50/80 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <div class="flex items-center gap-1.5 overflow-hidden">
+                            <i class="fa-regular fa-user text-slate-400"></i>
+                            <span class="truncate font-medium">${item.autor || 'Desconocido'}</span>
+                        </div>
+                        
+                        <button 
+                            type="button"
+                            onclick="event.stopPropagation(); navigateTo('${item.href}')" 
+                            class="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-semibold hover:underline group-hover:translate-x-0.5 transition-transform"
+                        >
+                            <span>Ir al enlace</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </footer>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        /**
+         * Genera los botones de filtros dinámicamente según las categorías existentes en el array.
+         */
+        function setupCategories() {
+            const categories = ["Todas", ...new Set(linksData.map(item => item.category))];
+            const filterContainer = document.getElementById('categoryFilters');
+            
+            filterContainer.innerHTML = categories.map(cat => `
+                <button 
+                    onclick="selectCategory('${cat}')"
+                    class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                        cat === selectedCategory 
+                        ? 'bg-brand-600 text-white shadow-sm' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }"
+                >
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            setupCategories();
+            filterCards();
+        }
+
+        /**
+         * Filtra las tarjetas por texto de búsqueda y por categoría seleccionada.
+         */
+        function filterCards() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = linksData.filter(item => {
+                const matchesCategory = selectedCategory === "Todas" || item.category === selectedCategory;
+                const matchesSearch = item.title.toLowerCase().includes(query) ||
+                                      item.texto.toLowerCase().includes(query) ||
+                                      (item.tags && item.tags.some(t => t.toLowerCase().includes(query)));
+                return matchesCategory && matchesSearch;
+            });
+
+            renderCards(filtered);
+        }
+
+        function openModal() {
+            document.getElementById('addCardModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('addCardModal').classList.add('hidden');
+            document.getElementById('cardForm').reset();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const newCard = {
+                id: Date.now(),
+                title: document.getElementById('modalTitle').value,
+                category: document.getElementById('modalCategory').value,
+                badge: document.getElementById('modalBadge').value || null,
+                href: document.getElementById('modalHref').value,
+                imagen: document.getElementById('modalImagen').value,
+                texto: document.getElementById('modalTexto').value,
+                autor: "Usuario",
+                fecha: new Date().getFullYear().toString(),
+                tags: document.getElementById('modalTags').value.split(',').map(t => t.trim()).filter(Boolean)
+            };
+
+            // Insertar la nueva tarjeta en el array del script
+            linksData.unshift(newCard);
+
+            // Guardar en localStorage
+            saveToLocalStorage();
+
+            // Actualizar interfaz
+            setupCategories();
+            filterCards();
+            closeModal();
+            showToast("Nueva tarjeta guardada correctamente");
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Inicializar preferencia de tema guardada
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        window.onload = function() {
+            setupCategories();
+            renderCards(linksData);
+        };
+    </script>
+</body>
+</html>
