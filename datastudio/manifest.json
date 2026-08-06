@@ -2,6 +2,7 @@
   "name": "PWA Básica Bootstrap 5",
   "short_name": "PWABootstrap",
   "description": "Plantilla PWA modular con interfaz estilizada mediante Bootstrap 5 y estructura de carpetas.",
+  "id": "/apps/datastudio/index.html",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#212529",
