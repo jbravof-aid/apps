@@ -1,6 +1,7 @@
-const CACHE_NAME = 'pwa-bootstrap-v1';
+const CACHE_NAME = 'datastudio-v1';
 const ASSETS_TO_CACHE = [
   './',
+  './assets/',
   './index.html',
   './manifest.json',
   './app.js',
