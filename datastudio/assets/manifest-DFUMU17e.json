@@ -1,0 +1,62 @@
+{
+  "name": "Remix DataBase Studio",
+  "short_name": "DB Studio",
+  "description": "Inspección, manipulación, respaldo, modelado y auditoría de bases de datos locales IndexedDB con soporte offline, búsqueda global y comandos por voz.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "categories": [
+    "productivity",
+    "developer",
+    "utilities",
+    "databases"
+  ],
+  "icons": [
+     {
+      "src": "./images/icon192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./images/icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard & Métricas",
+      "short_name": "Dashboard",
+      "description": "Ver métricas y resumen general de bases de datos",
+      "url": "./index.html?view=dashboard",
+      "icons": [{ "src": "./icon-512.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Inspector de Tablas (Offline)",
+      "short_name": "Inspector",
+      "description": "Inspeccionar esquemas, tablas y registros locales",
+      "url": "./index.html?view=inspector",
+      "icons": [{ "src": "./icon-512.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Query Studio SQL",
+      "short_name": "SQL Studio",
+      "description": "Consultas y relaciones avanzadas con Dexie / SQL",
+      "url": "./index.html?view=query",
+      "icons": [{ "src": "./icon-512.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Form Builder",
+      "short_name": "Formularios",
+      "description": "Generador y visor de formularios para IndexedDB",
+      "url": "./index.html?view=forms",
+      "icons": [{ "src": "./icon-512.jpg", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}
